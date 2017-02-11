@@ -152,20 +152,18 @@ abstract class Request implements RequestInterface
         // Retrieve request type
         $requestType = $data['request']['type'];
 
-        // Generate fully-qualified class name
-        $className = '\\Alexa\\Request\\' . $requestType;
-
         // Validate request type
-        if (!class_exists($className) ||
-            !in_array(RequestInterface::class, class_implements($className))
-        ) {
+        if (!in_array($requestType, CustomSkillRequestTypes::$validTypes)) {
             throw new \RuntimeException(
                 sprintf(static::ERROR_INVALID_REQUEST_TYPE, $requestType)
             );
         }
 
+        // Retrieve the correct request child class
+        $requestClass = CustomSkillRequestTypes::$validTypes[$requestType];
+
         // Generate request
-        $request = new $className($rawData, $applicationId, $certificate, $application);
+        $request = new $requestClass($rawData, $applicationId, $certificate, $application);
 
         // Return
         return $request;
